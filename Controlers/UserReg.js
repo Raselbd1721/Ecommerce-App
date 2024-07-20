@@ -26,6 +26,8 @@ const procssRegistraion=async(req,res,next)=>{
   res.cookie("accessToken",userToken,{
     maxAge:10*60*1000,
    httpOnly:true,
+   secure: true,
+   sameSite: 'Strict',
   })
   
   
@@ -102,6 +104,8 @@ const userLogin=async(req,res,next)=>{
   const CookieValue= res.cookie("loginCookie",jwtset,{
      maxAge:240*60*1000,
      httpOnly:true,
+     secure: true,
+   sameSite: 'Strict',
    })
   // console.log(userData)
     return res.status(201).json({message:"user login successfully",userData,
@@ -316,6 +320,8 @@ const updateUser=async(req,res,next)=>{
     const CookieValue= res.cookie("loginCookie",jwtToken,{
      maxAge:240*60*1000,
      httpOnly:true,
+     secure: true,
+   sameSite: 'Strict',
    })
   }
     return res.status(201).json({message:"user update Successfully",success:true,updateData})

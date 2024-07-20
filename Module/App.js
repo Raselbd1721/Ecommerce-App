@@ -32,7 +32,7 @@ app.use(cookieParser())
 app.use("/products",ProductsRoute)
 
 app.get("/",(req,res)=>{
-  res.status(200).send("hello world")
+  res.status(200).send("hello world render.com ")
 })
 
 app.get('/home', (req,res) => {

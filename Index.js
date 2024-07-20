@@ -1,7 +1,7 @@
 require('dotenv').config()
 const Db=require("./Service/Db.js")
 const app=require("./Module/App.js")
-const port = process.env.PORT
+const port = process.env.PORT || 3001
 
 
 app.listen(port,async() => {
