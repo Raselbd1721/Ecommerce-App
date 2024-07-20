@@ -28,7 +28,7 @@ const procssRegistraion=async(req,res,next)=>{
    httpOnly:true,
    secure: true,
    sameSite: 'Strict',
-   Domain:'https://react-app-ssv3.onrender.com',
+   Domain:'ecommerce-app-5dnf.onrender.com',
   })
   
   
@@ -107,7 +107,7 @@ const userLogin=async(req,res,next)=>{
      httpOnly:true,
      secure: true,
    sameSite: 'None',
-   Domain:'react-app-ssv3.onrender.com',
+   Domain:'ecommerce-app-5dnf.onrender.com',
    })
   // console.log(userData)
     return res.status(201).json({message:"user login successfully",userData,
@@ -324,7 +324,7 @@ const updateUser=async(req,res,next)=>{
      httpOnly:true,
      secure:'true',
    sameSite: 'None',
-   Domain:'react-app-ssv3.onrender.com',
+   Domain:'ecommerce-app-5dnf.onrender.com',
    })
   }
     return res.status(201).json({message:"user update Successfully",success:true,updateData})
