@@ -106,8 +106,8 @@ const userLogin=async(req,res,next)=>{
      maxAge:240*60*1000,
      httpOnly:true,
      secure: true,
-   sameSite: 'Strict',
-   Domain:'https://react-app-ssv3.onrender.com',
+   sameSite: 'None',
+   Domain:'react-app-ssv3.onrender.com',
    })
   // console.log(userData)
     return res.status(201).json({message:"user login successfully",userData,
@@ -322,9 +322,9 @@ const updateUser=async(req,res,next)=>{
     const CookieValue= res.cookie("loginCookie",jwtToken,{
      maxAge:240*60*1000,
      httpOnly:true,
-     secure: true,
-   sameSite: 'Strict',
-   Domain:'https://react-app-ssv3.onrender.com',
+     secure:'true',
+   sameSite: 'None',
+   Domain:'react-app-ssv3.onrender.com',
    })
   }
     return res.status(201).json({message:"user update Successfully",success:true,updateData})
