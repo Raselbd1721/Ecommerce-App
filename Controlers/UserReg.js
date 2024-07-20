@@ -28,7 +28,6 @@ const procssRegistraion=async(req,res,next)=>{
    httpOnly:true,
    secure: true,
    sameSite: 'Strict',
-   Domain:'react-app-ssv3.onrender.com',
   })
   
   
@@ -106,8 +105,7 @@ const userLogin=async(req,res,next)=>{
      maxAge:240*60*1000,
      httpOnly:true,
      secure: true,
-   sameSite: 'None',
-   Domain:'react-app-ssv3.onrender.com',
+   sameSite: 'Strict',
    })
   // console.log(userData)
     return res.status(201).json({message:"user login successfully",userData,
@@ -323,8 +321,8 @@ const updateUser=async(req,res,next)=>{
      maxAge:240*60*1000,
      httpOnly:true,
      secure:'true',
-   sameSite: 'None',
-   Domain:'react-app-ssv3.onrender.com',
+   sameSite: 'Strict',
+
    })
   }
     return res.status(201).json({message:"user update Successfully",success:true,updateData})

@@ -21,7 +21,7 @@ app.use(limiter)
 }))*/
 
 app.use(cors({
-  origin:["https://react-app-ssv3.onrender.com"],
+  origin:["http://localhost:5173/login"],
   methods:["GET","POST","DELETE","PUT"],
   credentials:true
 }))
