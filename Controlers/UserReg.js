@@ -188,7 +188,7 @@ const isLogin=async(req,res,next)=>{
 
 const isAdmin=async(req,res,next)=>{
   try{
-    const logCoo=req.cookies.loginCookie
+    const logCoo=req.session.loginToken
   if(!logCoo){
     throw new Error("kindly login first")
   }
@@ -365,7 +365,7 @@ return res.status(500).json({message:"Invalid Id"})
 const checkLogin=async(req,res,next)=>{
   try{
     
-    const userInfo=req?.loginData
+    const userInfo=req?.session.loginToken
     const exist=await EcomUsers.findById(userInfo.id)
     if(!exist.isActive){
       res.clearCookie("loginCookie")
