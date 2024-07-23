@@ -1,8 +1,11 @@
 
+require('dotenv').config()
 const express = require('express')
 const multer = require('multer')
 const cors = require('cors')
 const cookieParser = require('cookie-parser');
+const session = require('express-session');
+
 const ProductsRoute=require("../Routes/ProductsRoute.js")
 
 const {limiter}=require("../Service/ServerService.js")
@@ -21,14 +24,29 @@ app.use(limiter)
 }))*/
 
 app.use(cors({
-  origin:["http://localhost:5173"],
+  origin:["https://react-app-ssv3.onrender.com"],
   methods:["GET","POST","DELETE","PUT"],
   credentials:true
 }))
 //app.use(cors())
+
+
+app.use(express.json());
+
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended:true }))
 app.use(cookieParser())
+
+ app.use(session({
+    secret: process.env.SESSION_KEY,
+    resave: false, 
+    saveUninitialized: true, 
+    cookie: { 
+      secure: false,
+    maxAge: 1800000,
+    },
+}));
+
 app.use("/products",ProductsRoute)
 
 app.get("/",(req,res)=>{

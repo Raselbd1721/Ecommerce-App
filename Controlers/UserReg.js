@@ -1,5 +1,6 @@
 require('dotenv').config()
 const EcomUsers=require("../Model/UserRegSch.js")
+const session = require('express-session');
 const SendEmail=require("../Service/SendEmail.js")
 const bcrypt = require('bcryptjs');
 const mongoose=require("mongoose")
@@ -7,7 +8,7 @@ const createError = require('http-errors')
 const jwt=require("jsonwebtoken")
 const crypto = require('crypto');
 
-
+let mydec={}
 const procssRegistraion=async(req,res,next)=>{
   try{
     const {email,password,role}=req.body
@@ -22,11 +23,17 @@ const procssRegistraion=async(req,res,next)=>{
   const userToken=jwt.sign(userData,process.env.JWT_SECRET, { expiresIn: '3m' })
   console.log("sign",userToken)
   const dec=jwt.verify(userToken,process.env.JWT_SECRET)
-  console.log(dec)
-  res.cookie("accessToken",userToken,{
+  req.session.accessToken=dec
+  mydec=dec
+    const token=req.session.accessToken
+   console.log("check session token",token)
+  
+ // console.log("myRegTokenuser",myRegToken)
+
+  /*res.cookie("accessToken",userToken,{
     maxAge:10*60*1000,
    httpOnly:true,
-  })
+  })*/
   
   
   /*try{
@@ -46,23 +53,24 @@ const procssRegistraion=async(req,res,next)=>{
 
 const checkOtp=async(req,res,next)=>{
   try{
+const token=req.session.accessToken
+   console.log("check session for otp",token)
+  
     const {secretKey}=req.body
-    console.log(secretKey)
     if(!secretKey){
       throw new Error("Otp required ")
     }
-    const token=req.cookies.accessToken
    
-    const dec=jwt.verify(token,process.env.JWT_SECRET)
     
-    if(secretKey != dec.otp){
+    
+    if(secretKey != token.otp){
       throw new Error("invalid Otp please enter correct otp")
     }
-    const exist=await EcomUsers.findOne({email:dec.email})
+  const exist=await EcomUsers.findOne({email:token.email})
     if(exist){
-      throw createError(404,`this (${dec.email}) Email already Used`)
+      throw createError(404,`this (${token.email}) Email already Used`)
     }
-    const newUser=await EcomUsers.create(dec)
+    const newUser=await EcomUsers.create(token)
     
     return res.status(201).json({newUser,
       message:"user Create successfully",
@@ -99,10 +107,12 @@ const userLogin=async(req,res,next)=>{
    
    const jwtset=jwt.sign(userData,process.env.JWT_LOGIN_KEY,{ expiresIn: '4h' })
    
-  const CookieValue= res.cookie("loginCookie",jwtset,{
+   req.session.loginToken=jwtset
+   
+ /* const CookieValue= res.cookie("loginCookie",jwtset,{
      maxAge:240*60*1000,
      httpOnly:true,
-   })
+   })*/
   // console.log(userData)
     return res.status(201).json({message:"user login successfully",userData,
     success:true,
@@ -113,7 +123,13 @@ const userLogin=async(req,res,next)=>{
 }
 const userLogout=async(req,res,next)=>{
   try{
-    res.clearCookie("loginCookie")
+    if (req.session) {
+        req.session.destroy(err => {
+            if (err) {
+                return res.status(500).send('Error destroying session');
+            }
+        })
+    }
     return res.status(201).json({message:"user logOut successfully",
     })
   }catch(error){
@@ -123,7 +139,7 @@ const userLogout=async(req,res,next)=>{
 
 const isLogout=async(req,res,next)=>{
   try{
-    const logCoo=req.cookies.loginCookie
+    const logCoo=req.session.loginToken
   if(logCoo){
     throw new Error("user already loged in kindly logout first")
     try{
@@ -145,7 +161,7 @@ const isLogout=async(req,res,next)=>{
 
 const isLogin=async(req,res,next)=>{
   try{
-    const logCoo=req.cookies.loginCookie
+    const logCoo=req.session.loginToken
   if(!logCoo){
     throw new Error("kindly login first")
   }
