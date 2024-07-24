@@ -108,7 +108,7 @@ return res.status(500).json({message:"Invalid Id"})
 
 const getAllProduct=async(req,res,next)=>{
   try{
-    
+   
     const search =req.query.search || ""
     let limits =Number(req.query.limit) || 5
     let page =Number(req.query.page) || 1
