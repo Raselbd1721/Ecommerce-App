@@ -4,7 +4,7 @@ const SendEmail=require("../Service/SendEmail.js")
 const bcrypt = require('bcryptjs');
 const mongoose=require("mongoose")
 const createError = require('http-errors') 
-const jw=require("jsonwebtoken")
+const jwt=require("jsonwebtoken")
 const crypto = require('crypto');
 
 
