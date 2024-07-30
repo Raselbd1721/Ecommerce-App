@@ -21,7 +21,7 @@ app.use(limiter)
 }))*/
 
 app.use(cors({
-  origin:["https://react-app-jade-iota.vercel.app"],
+  origin:["https://react-app-ssv3.onrender.com"],
   methods:["GET","POST","DELETE","PUT"],
   credentials:true
 }))

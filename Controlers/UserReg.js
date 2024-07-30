@@ -22,22 +22,23 @@ const procssRegistraion=async(req,res,next)=>{
   const userToken=jwt.sign(userData,process.env.JWT_SECRET, { expiresIn: '3m' })
   console.log("sign",userToken)
   const dec=jwt.verify(userToken,process.env.JWT_SECRET)
-  console.log(dec)
+  
+  /* console.log(dec)
   res.cookie("accessToken",userToken,{
     maxAge:10*60*1000,
    httpOnly:true,
   })
-  
-  
+*/
   /*try{
     await SendEmail(dec)
   }catch(error){
     throw error
   }*/
-   // const newUser=await EcomUsers.create(userData)
+  
     return res.status(201).json({
       message:`Check this [${dec.email}] email account inbox for user Registration`,
       otp:dec.otp,
+      userInfo:userToken,
     })
   }catch(error){
     next(error)
@@ -47,13 +48,20 @@ const procssRegistraion=async(req,res,next)=>{
 const checkOtp=async(req,res,next)=>{
   try{
     const {secretKey}=req.body
-    console.log(secretKey)
-    if(!secretKey){
+  if(!secretKey){
       throw new Error("Otp required ")
     }
-    const token=req.cookies.accessToken
-   
-    const dec=jwt.verify(token,process.env.JWT_SECRET)
+    const token=req.headers['authorization']
+ if(!token){
+   throw new Error("invalid token")
+ }
+ const newToken=token.replace("Bearer","").trim()
+ 
+ if(newToken==""){
+   throw new Error("token expired")
+ }
+ 
+    const dec=jwt.verify(newToken,process.env.JWT_SECRET)
     
     if(secretKey != dec.otp){
       throw new Error("invalid Otp please enter correct otp")
@@ -99,12 +107,13 @@ const userLogin=async(req,res,next)=>{
    
    const jwtset=jwt.sign(userData,process.env.JWT_LOGIN_KEY,{ expiresIn: '4h' })
    
-  const CookieValue= res.cookie("loginCookie",jwtset,{
+  /*const CookieValue= res.cookie("loginCookie",jwtset,{
      maxAge:240*60*1000,
      httpOnly:true,
-   })
-  // console.log(userData)
+   })*/
+  
     return res.status(201).json({message:"user login successfully",userData,
+    loginToken:jwtset,
     success:true,
     })
   }catch(error){
@@ -113,7 +122,7 @@ const userLogin=async(req,res,next)=>{
 }
 const userLogout=async(req,res,next)=>{
   try{
-    res.clearCookie("loginCookie")
+   // res.clearCookie("loginCookie")
     return res.status(201).json({message:"user logOut successfully",
     })
   }catch(error){
@@ -123,7 +132,9 @@ const userLogout=async(req,res,next)=>{
 
 const isLogout=async(req,res,next)=>{
   try{
-    const logCoo=req.cookies.loginCookie
+   const token=req.headers["authorization"]
+   const logCoo=token.replace("Bearer","").trim()
+   console.log(logCoo)
   if(logCoo){
     throw new Error("user already loged in kindly logout first")
     try{
@@ -145,10 +156,21 @@ const isLogout=async(req,res,next)=>{
 
 const isLogin=async(req,res,next)=>{
   try{
-    const logCoo=req.cookies.loginCookie
+   // const logCoo=req.cookies.loginCookie
+    
+    const token=req.headers['authorization']
+    
+ if(!token){
+   throw new Error("kindly login first")
+ }
+ const logCoo=token.replace("Bearer","").trim()
   if(!logCoo){
     throw new Error("kindly login first")
   }
+  if(logCoo==""){
+   throw new Error("session expired kindlylogin again")
+ }
+  
     const decoded=jwt.verify(logCoo,process.env.JWT_LOGIN_KEY)
   if(!decoded){
     throw new Error("session expired")
@@ -156,23 +178,41 @@ const isLogin=async(req,res,next)=>{
   const exist=await EcomUsers.findById(decoded.id)
   
   if(!exist.isActive){
-    res.clearCookie("loginCookie")
+   // res.clearCookie("loginCookie")
       throw createError(404,"This user Baned kindly contact with Admin")
     }
-    
-  
   req.loginData=decoded
-  
   next()
   }catch(error){
     next(error)
   }
 }
 
+const checkLogin=async(req,res,next)=>{
+  try{
+    const userInfo=req?.loginData
+    const exist=await EcomUsers.findById(userInfo.id)
+    if(!exist.isActive){
+    //  res.clearCookie("loginCookie")
+  await  userLogout()
+      throw createError(404,"This user Baned kindly contact with Admin")
+    }
+   //delete userInfo.password
+    return res.status(201).json({message:"user validation Successfully",userInfo})
+  }catch(error){
+    next(error)
+  }
+}
 
 const isAdmin=async(req,res,next)=>{
   try{
-    const logCoo=req.cookies.loginCookie
+    const token=req.headers['authorization']
+    
+ if(!token){
+   throw new Error("kindly login first")
+ }
+ const logCoo=token.replace("Bearer","").trim()
+
   if(!logCoo){
     throw new Error("kindly login first")
   }
@@ -202,7 +242,8 @@ const GetAllUsers=async(req,res,next)=>{
    const byId=req.loginData.id
    const user=await EcomUsers.findById(byId)
    if(!user.isActive){
-     res.clearCookie("loginCookie")
+    // res.clearCookie("loginCookie")
+    // res.clearCookie("loginCookie")
       throw createError(404,"This user Baned kindly contact with Admin")
     }
    
@@ -296,7 +337,8 @@ const updateUser=async(req,res,next)=>{
     if(!updateData){
       throw createError(404,"user not update something went wrong")
     }
-    const logCoo=req.cookies.loginCookie
+    const logCoo=req.headers['authorization'].replace("Bearer","").trim()
+    
     if(!logCoo){
     throw new Error("kindly login first")
   }
@@ -306,19 +348,26 @@ const updateUser=async(req,res,next)=>{
     if(!decoded){
     throw new Error("session expired")
   }
+  
+  let jwtToken;
   if(decoded.id === id){
-    const jwtToken=jwt.sign(userData,process.env.JWT_LOGIN_KEY,{ expiresIn:'4h' })
+     jwtToken=jwt.sign(userData,process.env.JWT_LOGIN_KEY,{ expiresIn:'4h' })
     
     if(!jwtToken){
     throw new Error("something worng")
   }
     
-    const CookieValue= res.cookie("loginCookie",jwtToken,{
+    /*const CookieValue= res.cookie("loginCookie",jwtToken,{
      maxAge:240*60*1000,
      httpOnly:true,
-   })
+   })*/
   }
-    return res.status(201).json({message:"user update Successfully",success:true,updateData})
+  else{
+    jwtToken=logCoo
+  }
+    return res.status(201).json({message:"user update Successfully",success:true,updateData,
+      loginToken:jwtToken,
+    })
   }catch(error){
     if(error instanceof mongoose.Error.CastError){
 return res.status(500).json({message:"Invalid Id"})
@@ -345,22 +394,6 @@ return res.status(500).json({message:"Invalid Id"})
   }
 }
 
-
-const checkLogin=async(req,res,next)=>{
-  try{
-    
-    const userInfo=req?.loginData
-    const exist=await EcomUsers.findById(userInfo.id)
-    if(!exist.isActive){
-      res.clearCookie("loginCookie")
-      throw createError(404,"This user Baned kindly contact with Admin")
-    }
-   //delete userInfo.password
-    return res.status(201).json({message:"user validation Successfully",userInfo})
-  }catch(error){
-    next(error)
-  }
-}
 
 const FindUser=async(req,res,next)=>{
   try{
